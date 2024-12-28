@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=1.0">
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.iconify.design/iconify-icon/2.2.0/iconify-icon.min.js"></script>
+
+    <title>Consulta IP</title>
+
+</head>
+<body class="ip_bg">
+    <nav class="navbar navbar-dark navbar-custom">
+        <div class="container-fluid">
+          <span class="navbar-text">
+            <a href="/home"><img src="/static/img/adaptive_security_logo.jpeg" alt="" width="15%" height="15%" ></a>
+          </span>
+          <div class="mr-auto d-flex align-items-center" style="padding-right: 50px; font-size: large;">
+             <a class="nav-link" style="color: rgb(238, 209, 123);" href="/home"><iconify-icon icon="fluent-color:home-24" width="25" height="25" style="vertical-align: middle;"></iconify-icon>&nbsp;Home &nbsp;| </a>  &nbsp; &nbsp; 
+             <a class="nav-link" style="color: rgb(238, 209, 123);"  href="/dashboard"> <iconify-icon icon="icon-park-outline:market-analysis" width="25" height="25" style="vertical-align: middle; color: rgb(243, 171, 71);"></iconify-icon>&nbsp; Dashboard &nbsp;|</a> &nbsp;&nbsp;
+             <a class="nav-link" style="color: rgb(238, 209, 123);"  href="/gestionar_ip"> <iconify-icon icon="ic:outline-edit-location-alt" width="25" height="25" style="vertical-align: middle; color: rgb(243, 171, 71);"></iconify-icon>&nbsp; Gestionar IP</a> 
+         </div>
+
+        </div>
+      </nav><br>
+    <div class="container mt-2">
+        <div class="card" style="padding: 0;">
+            <div class="card-header" style="font-weight: bolder; font-size: x-large;"><iconify-icon icon="solar:map-point-search-bold" width="40" height="40" style="vertical-align: middle; margin-bottom: 3px; color: rgb(255, 94, 0);"></iconify-icon>Busqueda de IP </div>
+                <div class="card-body">
+                    <form method="POST" >
+                        <div class="mb-3">
+                            <label for="ip" class="form-label">Dirección IP a consultar</label>
+                            <input type="text" class="form-control" id="ip" name="ip" placeholder="Ingresa una dirección IP" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Consultar</button>
+                    </form>
+                </div>
+            
+        </div><br>
+         
+        <div class="card" style="padding: 0; width: 100%;">
+            <div class="card-header"><label class="text-center" style="font-weight: bold;">Resultado Busqueda</h1></div>
+                <div class="card-body">
+                    {% if datos_ipstack or datos_abuseipdb %}
+                    <h5 class="mt-1" style="font-weight: bolder;"> IP: {{ ip if ip else "No ingresada" }}</h5>
+                    <div class=" table-responsive">
+                        <table class="table table-striped table-bordered table-hover">
+                            <thead class="table-primary" >
+                                <tr style="text-align: center; ">
+                                    <th>País </th>
+                                    <th>Ciudad </th>
+                                    <th>Latitud </th>
+                                    <th>Longitud </th>
+                                    <th>Índice de Reputación (%) </th>
+                                    <th>Total de Reportes </th>
+                                    <th>Último Reporte </th>
+                                    <th>Estado Clasificado </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>{{ datos_ipstack.pais }} </td>
+                                    <td>{{ datos_ipstack.ciudad }}</td>
+                                    <td>{{ datos_ipstack.latitud }}</td>
+                                    <td>{{ datos_ipstack.longitud }}</td>
+                                    <td>{{ datos_abuseipdb.reputation}}</td>
+                                    <td>{{ datos_abuseipdb.totalReports if datos_abuseipdb else 'Sin Datos' }}</td>
+                                    <td>{{ datos_abuseipdb.lastReportedAt if datos_abuseipdb else 'Sin Datos' }}</td>
+                                    <td>
+                                        {% set reputation = datos_abuseipdb.reputation if datos_abuseipdb else 0 %}
+                                        {% if reputation <= 25 %}
+                                            <span class="badge bg-success">Confiable</span>
+                                        {% elif reputation <= 50 %}
+                                            <span class="badge bg-warning text-dark">Sospechosa</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Maliciosa</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {%else%}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered table-responsive table-hover">
+                            <thead class="table-primary">
+                                <tr style="text-align: center;  ">
+                                    <th>País </th>
+                                    <th>Ciudad </th>
+                                    <th>Latitud </th>
+                                    <th>Longitud </th>
+                                    <th>Índice de Reputación </th>
+                                    <th>Total de Reportes </th>
+                                    <th>Último Reporte </th>
+                                    <th>Estado Clasificado </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="8" style="text-align: center;"> Sin resultado de busqueda</td>
+                                 </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+    </div>
+
+    {% if datos_ipstack == None %}
+    {%else%}
+    <div class="card" style="padding: 0;"> 
+        <div class="card-header"><label class="text-center" style="font-weight: bold;">Ubicación Geográfica</label></div>
+        <div class="card-body">
+            <!-- Mapa --> 
+            <div id="map" ></div>
+            <script> 
+                var latitud = {{ datos_ipstack.latitud }};
+                var longitud = {{ datos_ipstack.longitud }}; 
+                var map = L.map('map').setView([latitud, longitud], 10); // Centrado en las coordenadas y nivel de zoom inicial 10 
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, }).addTo(map); 
+                L.marker([latitud, longitud]).addTo(map) 
+                .bindPopup("País: {{ datos_ipstack.pais }}<br>Ciudad: {{ datos_ipstack.ciudad }}"); 
+            </script>
+        </div>            
+    </div>
+    {% endif %}    
+        <br>
+        <div class="d-flex justify-content-center">
+            <form method="POST" action="/agregar_bd">
+                 <input type="hidden" name="direccion_ip" value="{{ ip if ip else '' }}">
+                 <input type="hidden" name="pais" value="{{ datos_ipstack.pais }}">
+                 <input type="hidden" name="ciudad" value="{{ datos_ipstack.ciudad }}"> 
+                 <input type="hidden" name="latitud" value="{{ datos_ipstack.latitud }}"> 
+                 <input type="hidden" name="longitud" value="{{ datos_ipstack.longitud }}">
+                 <input type="hidden" name="indice_reputacion" value="{{ datos_abuseipdb.reputation }}">
+                 <input type="hidden" name="total_reportes" value="{{ datos_abuseipdb.totalReports if datos_abuseipdb else 'N/A' }}">
+                 <input type="hidden" name="ultimo_reporte" value="{{ datos_abuseipdb.lastReportedAt if datos_abuseipdb else 'N/A' }}">
+                 <input type="hidden" name="estado" value="{{ estado_clasificado }}"> 
+                 <button class="btn btn-success" type="submit">Agregar a la Base de Datos</button>
+            </form>
+        </div>
+        <br>
+    </div>
+    <br>
+
+</body>
+</html>
