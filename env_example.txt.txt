@@ -1,9 +1,8 @@
 FLASK_ENV=development
-DB_HOST="host"
+DB_HOST="tu_host"
 DB_USER="user"
 DB_PASSWORD="password"
-DB_NAME=desafio_ip
+DB_NAME="nombre_base_datos"
 ABUSEIPDB_API_KEY="key_readme"
 IPSTACK_API_KEY="key2_readme"
-
 
