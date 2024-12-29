@@ -1,0 +1,29 @@
+CREATE DATABASE desafio_ip; 
+
+USE desafio_ip; 
+
+CREATE TABLE `analisis_ip` ( 
+
+  `id` int NOT NULL AUTO_INCREMENT, 
+
+  `direccion_ip` varchar(15) DEFAULT NULL, 
+
+  `pais` varchar(50) DEFAULT NULL, 
+
+  `ciudad` varchar(50) DEFAULT NULL, 
+
+  `indice_reputacion` varchar(50) DEFAULT NULL, 
+
+  `estado` varchar(50) DEFAULT NULL, 
+
+  `latitud` float DEFAULT NULL, 
+
+  `longitud` float DEFAULT NULL, 
+
+  `total_reportes` int DEFAULT NULL, 
+
+  `ultimo_reporte` varchar(100) DEFAULT NULL, 
+
+  PRIMARY KEY (`id`) 
+
+) 
