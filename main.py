@@ -5,6 +5,13 @@ import requests
 from app import app
 from datetime import datetime
 
+import re
+
+def validar_formato_ip(ip):
+    ip_regex = re.compile(
+        r"^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$"
+    )
+    return bool(ip_regex.match(ip))
 # Conexión a la base de datos
 def get_db_connection():
     try:
@@ -20,7 +27,6 @@ def get_db_connection():
 
 # Función para consultar la API 
 def consultar_ipstack(ip):
-    print(f"Consultando IPStack para la IP: {ip}")  # Depuración
     api_key = os.getenv("IPSTACK_API_KEY")
     url = f"http://api.ipstack.com/{ip}"
     params = {
@@ -31,7 +37,7 @@ def consultar_ipstack(ip):
         if response.status_code == 200:
             data = response.json()
             return {
-                "ip": data.get("ip"),
+                "ip": data.get("ip", "IP no disponible"),
                 "pais": data.get("country_name", "Desconocido"),
                 "ciudad": data.get("city", "Desconocido"),
                 "latitud": data.get("latitude"),
@@ -63,15 +69,15 @@ def consultar_abuseipdb(ip):
         if response.status_code == 200:
             data = response.json()
             return {
-                "ip": data["data"]["ipAddress"],
-                "reputation": data["data"]["abuseConfidenceScore"],
-                "totalReports": data["data"]["totalReports"],
-                "lastReportedAt": data["data"]["lastReportedAt"]
+                "ip": data["data"].get("ipAddress", "IP no disponible"),
+                "reputation": data["data"].get("abuseConfidenceScore", 0),
+                "totalReports": data["data"].get("totalReports", 0),
+                "lastReportedAt": data["data"].get("lastReportedAt", "Sin datos"),
             }
         else:
             return {"error": f"Error {response.status_code}: {response.text}"}
     except Exception as e:
-        return {"error": str(e)}    
+        return {"error": str(e)}
 
 
 @app.route('/')
@@ -89,12 +95,26 @@ def buscar_ip():
     datos_ipstack = None
     datos_abuseipdb = None
     ip = None
+    mensaje_error = None  # Variable para manejar errores
+
     if request.method == 'POST':
         ip = request.form.get('ip')
-        if ip:
+
+        # Validar formato de IP
+        if not validar_formato_ip(ip):
+            mensaje_error = "Formato de IP no válido. Por favor, ingrese una dirección IPv4 válida."
+        else:
+            # Consultar las APIs si el formato es válido
             datos_ipstack = consultar_ipstack(ip)
             datos_abuseipdb = consultar_abuseipdb(ip)
-    return render_template('buscar_ip.html', datos_ipstack=datos_ipstack, datos_abuseipdb=datos_abuseipdb, ip=ip)
+
+    return render_template(
+        'buscar_ip.html', 
+        datos_ipstack=datos_ipstack, 
+        datos_abuseipdb=datos_abuseipdb, 
+        ip=ip, 
+        mensaje_error=mensaje_error
+    )
 
 
 
@@ -173,7 +193,7 @@ def agregar_bd():
         ciudad = request.form.get('ciudad')
         try:
             indice_reputacion = request.form.get('indice_reputacion') 
-            print(f"Consultando indice reputacion: {indice_reputacion}")
+            
         except:
             indice_reputacion= 0
         estado = calcular_estado(indice_reputacion)
@@ -181,7 +201,7 @@ def agregar_bd():
         longitud = request.form.get('longitud') 
         total_reportes = request.form.get('total_reportes')
         ultimo_reporte = request.form.get('ultimo_reporte') 
-        if not ultimo_reporte:  
+        if not ultimo_reporte or ultimo_reporte.strip() == "" or ultimo_reporte.strip().lower() == "none":  
             ultimo_reporte = "Sin Datos"        
         connection = get_db_connection()
         cursor = connection.cursor()
@@ -199,7 +219,8 @@ def edicion_ip():
         pais = request.form.get('pais') 
         ciudad = request.form.get('ciudad')
         indice_reputacion = request.form.get('indiceReputacion') 
-        estado = request.form.get('estado')
+        indice_reputacion = int(indice_reputacion)
+        estado = calcular_estado(indice_reputacion)
         latitud = request.form.get('latitud') 
         longitud = request.form.get('longitud') 
         total_reportes = request.form.get('totalReportes')

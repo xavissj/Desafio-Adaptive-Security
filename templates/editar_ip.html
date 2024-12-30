@@ -33,13 +33,13 @@
                             </div> 
                             <div class="col-md-6"> 
                                 <label for="indiceReputacion" class="form-label">Índice de Reputación</label> 
-                                <input type="text" name = "indiceReputacion" class="form-control" id="indiceReputacion" style="width: 50%;" value="{{ datos[0][4] }}">
+                                <input type="number" min="0" max="100" name = "indiceReputacion" class="form-control" id="indiceReputacion" style="width: 50%;" value="{{ datos[0][4] }}" placeholder="Ingrese un número de 0 a 100" required ><div class="form-text">El valor debe estar entre 0 y 100.</div>
                             </div>
                         </div> 
                         <div class="row mb-4">
                             <div class="col-md-6"> 
                                 <label for="estado" class="form-label">Estado</label>
-                                <input type="text" name = "estado" class="form-control" id="estado" value="{{ datos[0][5] }}"> 
+                                <input type="text" name = "estado" class="form-control" id="estado" value="{{ datos[0][5] }} "readonly> 
                             </div>
                         <div class="col-md-6">
                             <label for="latitud" class="form-label">Latitud</label> 
